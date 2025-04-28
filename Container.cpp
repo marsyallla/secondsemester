@@ -23,12 +23,25 @@ void SplayTree::deleteTree(SplayNode* t) {
     delete t;
 }
 
+void SplayTree::updateSum(SplayNode* t) {
+    if (!t) return;
+    t->sum = t->weight + (t->l ? t->l->sum : 0) + (t->r ? t->r->sum : 0);
+}
+
+SplayNode* SplayTree::updateSums(SplayNode* t) {
+    if (!t) return nullptr;
+    if (t->l) updateSums(t->l);
+    if (t->r) updateSums(t->r);
+    updateSum(t);
+    return t;
+}
+
 SplayNode* SplayTree::rotateLeft(SplayNode* t) {
     SplayNode* newRoot = t->r;
     t->r = newRoot->l;
     newRoot->l = t;
-    t->sum = t->weight + (t->l ? t->l->sum : 0) + (t->r ? t->r->sum : 0);
-    newRoot->sum = newRoot->weight + (newRoot->l ? newRoot->l->sum : 0) + (newRoot->r ? newRoot->r->sum : 0);
+    updateSum(t);
+    updateSum(newRoot);
     return newRoot;
 }
 
@@ -36,8 +49,8 @@ SplayNode* SplayTree::rotateRight(SplayNode* t) {
     SplayNode* newRoot = t->l;
     t->l = newRoot->r;
     newRoot->r = t;
-    t->sum = t->weight + (t->l ? t->l->sum : 0) + (t->r ? t->r->sum : 0);
-    newRoot->sum = newRoot->weight + (newRoot->l ? newRoot->l->sum : 0) + (newRoot->r ? newRoot->r->sum : 0);
+    updateSum(t);
+    updateSum(newRoot);
     return newRoot;
 }
 
@@ -72,7 +85,7 @@ SplayNode* SplayTree::insert(SplayNode* t, int key, double weight) {
     t = splay(t, key);
     if (t->key == key) {
         t->weight = weight;
-        t->sum = t->weight + (t->l ? t->l->sum : 0) + (t->r ? t->r->sum : 0);
+        updateSum(t);
         return t;
     }
     SplayNode* newNode = new SplayNode(key, weight);
@@ -85,8 +98,8 @@ SplayNode* SplayTree::insert(SplayNode* t, int key, double weight) {
         newNode->r = t->r;
         t->r = nullptr;
     }
-    t->sum = t->weight + (t->l ? t->l->sum : 0) + (t->r ? t->r->sum : 0);
-    newNode->sum = newNode->weight + (newNode->l ? newNode->l->sum : 0) + (newNode->r ? newNode->r->sum : 0);
+    updateSum(t);
+    updateSum(newNode);
     return newNode;
 }
 
@@ -98,16 +111,17 @@ SplayNode* SplayTree::erase(SplayNode* t, int key) {
     if (!t) return nullptr;
     t = splay(t, key);
     if (t->key != key) return t;
+    
+    SplayNode* newRoot;
     if (!t->l) {
-        SplayNode* temp = t->r;
-        delete t;
-        return temp;
+        newRoot = t->r;
     } else {
-        SplayNode* temp = t->l;
-        t = splay(t->r, key);
-        t->l = temp;
-        return t;
+        newRoot = splay(t->l, key);
+        newRoot->r = t->r;
     }
+
+    delete t;
+    return updateSums(newRoot);
 }
 
 void SplayTree::erase(int key) {
@@ -125,6 +139,7 @@ void SplayTree::print() {
     if (!root) cout << "Container is empty.\n";
     else print_inorder(root);
 }
+
 SplayNode* SplayTree::select_by_probability(SplayNode* t, double random_value) {
     if (!t) return nullptr;
     double left_sum = (t->l ? t->l->sum : 0);

@@ -23,6 +23,8 @@ private:
     void print_inorder(SplayNode* t);
     SplayNode* select_by_probability(SplayNode* t, double random_value);
     void deleteTree(SplayNode* t);
+    void updateSum(SplayNode* t);
+    SplayNode* updateSums(SplayNode* t);
 
 public:
     SplayTree();
