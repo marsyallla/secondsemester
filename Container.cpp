@@ -38,6 +38,8 @@ SplayNode* SplayTree::updateSums(SplayNode* t) {
 
 SplayNode* SplayTree::rotateLeft(SplayNode* t) {
     SplayNode* newRoot = t->r;
+    if (!newRoot) return t;  // safety check
+
     t->r = newRoot->l;
     newRoot->l = t;
     updateSum(t);
@@ -47,6 +49,8 @@ SplayNode* SplayTree::rotateLeft(SplayNode* t) {
 
 SplayNode* SplayTree::rotateRight(SplayNode* t) {
     SplayNode* newRoot = t->l;
+    if (!newRoot) return t;  // safety check
+
     t->l = newRoot->r;
     newRoot->r = t;
     updateSum(t);
@@ -56,6 +60,7 @@ SplayNode* SplayTree::rotateRight(SplayNode* t) {
 
 SplayNode* SplayTree::splay(SplayNode* t, int key) {
     if (!t) return nullptr;
+
     if (key < t->key) {
         if (!t->l) return t;
         if (key < t->l->key) {
@@ -93,31 +98,41 @@ SplayNode* SplayTree::insert(SplayNode* t, int key, double weight) {
         newNode->r = t;
         newNode->l = t->l;
         t->l = nullptr;
+        updateSum(t);
     } else {
         newNode->l = t;
         newNode->r = t->r;
         t->r = nullptr;
+        updateSum(t);
     }
-    updateSum(t);
     updateSum(newNode);
     return newNode;
 }
 
 void SplayTree::insert(int key, double weight) {
     root = insert(root, key, weight);
+    root = updateSums(root);
+}
+
+int SplayTree::findMaxKey(SplayNode* t) {
+    if (!t) return -1; // or throw exception
+    while (t->r) t = t->r;
+    return t->key;
 }
 
 SplayNode* SplayTree::erase(SplayNode* t, int key) {
     if (!t) return nullptr;
     t = splay(t, key);
     if (t->key != key) return t;
-    
+
     SplayNode* newRoot;
     if (!t->l) {
         newRoot = t->r;
     } else {
-        newRoot = splay(t->l, key);
+        int maxKey = findMaxKey(t->l);
+        newRoot = splay(t->l, maxKey);
         newRoot->r = t->r;
+        updateSum(newRoot);
     }
 
     delete t;
@@ -126,6 +141,7 @@ SplayNode* SplayTree::erase(SplayNode* t, int key) {
 
 void SplayTree::erase(int key) {
     root = erase(root, key);
+    // Не вызываем повторный splay — он уже сделан внутри erase
 }
 
 void SplayTree::print_inorder(SplayNode* t) {
@@ -142,9 +158,10 @@ void SplayTree::print() {
 
 SplayNode* SplayTree::select_by_probability(SplayNode* t, double random_value) {
     if (!t) return nullptr;
+
     double left_sum = (t->l ? t->l->sum : 0);
-    
-    if (random_value <= left_sum)
+
+    if (random_value < left_sum)
         return select_by_probability(t->l, random_value);
     else if (random_value <= left_sum + t->weight)
         return t;
@@ -157,27 +174,30 @@ void SplayTree::select_random_by_weight() {
         cout << "Container is empty.\n";
         return;
     }
-    
-    double random_value = (rand() % (int)(root->sum * 100)) / 100.0;
+    double random_value = static_cast<double>(rand()) / RAND_MAX * root->sum;
+    if (random_value > root->sum) random_value = root->sum; // safety check
+
     SplayNode* selected = select_by_probability(root, random_value);
-    
-    if (selected) {
-        cout << "Selected element: Key: " << selected->key << " (Weight: " << selected->weight << ")\n";
-    } else {
-        cout << "No element selected.\n";
-    }
+
+    //if (selected) {
+        //cout << "Selected element: Key: " << selected->key
+          //   << " (Weight: " << selected->weight << ")\n";
+   // } else {
+   //     cout << "No element selected (this shouldn't happen with correct probabilities).\n";
+    //}
 }
 
 void SplayTree::add_random_elements(int n) {
     auto start = high_resolution_clock::now();
-    
+
     for (int i = 0; i < n; ++i) {
         int key = rand() % 1000000;
         double weight = (rand() % 1000 + 1) / 10.0;
         root = insert(root, key, weight);
     }
-    
+
     auto end = high_resolution_clock::now();
-    cout << "Added " << n << " random elements in "
-         << duration_cast<milliseconds>(end - start).count() << " ms\n";
+    //cout << "Added " << n << " random elements in "
+         cout << duration_cast<milliseconds>(end - start).count() << " ms\n";
 }
+

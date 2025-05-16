@@ -14,7 +14,7 @@ struct SplayNode {
 class SplayTree {
 private:
     SplayNode* root;
-
+    int findMaxKey(SplayNode* t);
     SplayNode* rotateLeft(SplayNode* t);
     SplayNode* rotateRight(SplayNode* t);
     SplayNode* splay(SplayNode* t, int key);
@@ -29,12 +29,15 @@ private:
 public:
     SplayTree();
     ~SplayTree();
-
     void insert(int key, double weight);
     void erase(int key);
     void print();
     void add_random_elements(int n);
     void select_random_by_weight();
+    SplayNode* getRoot() const { return root; }
+    SplayNode* select_by_probability(double random_value) {
+        return select_by_probability(root, random_value);
+    }
 };
 
 #endif
