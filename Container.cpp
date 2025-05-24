@@ -38,7 +38,7 @@ SplayNode* SplayTree::updateSums(SplayNode* t) {
 
 SplayNode* SplayTree::rotateLeft(SplayNode* t) {
     SplayNode* newRoot = t->r;
-    if (!newRoot) return t;  // safety check
+    if (!newRoot) return t;  
 
     t->r = newRoot->l;
     newRoot->l = t;
@@ -49,7 +49,7 @@ SplayNode* SplayTree::rotateLeft(SplayNode* t) {
 
 SplayNode* SplayTree::rotateRight(SplayNode* t) {
     SplayNode* newRoot = t->l;
-    if (!newRoot) return t;  // safety check
+    if (!newRoot) return t;  
 
     t->l = newRoot->r;
     newRoot->r = t;
@@ -115,7 +115,7 @@ void SplayTree::insert(int key, double weight) {
 }
 
 int SplayTree::findMaxKey(SplayNode* t) {
-    if (!t) return -1; // or throw exception
+    if (!t) return -1; 
     while (t->r) t = t->r;
     return t->key;
 }
@@ -175,7 +175,7 @@ void SplayTree::select_random_by_weight() {
         return;
     }
     double random_value = static_cast<double>(rand()) / RAND_MAX * root->sum;
-    if (random_value > root->sum) random_value = root->sum; // safety check
+    if (random_value > root->sum) random_value = root->sum;
 
     SplayNode* selected = select_by_probability(root, random_value);
 
@@ -183,7 +183,7 @@ void SplayTree::select_random_by_weight() {
         //cout << "Selected element: Key: " << selected->key
           //   << " (Weight: " << selected->weight << ")\n";
    // } else {
-   //     cout << "No element selected (this shouldn't happen with correct probabilities).\n";
+   //     cout << "No element selected .\n";
     //}
 }
 
